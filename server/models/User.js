@@ -16,7 +16,16 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    profilePic: {
+      type: String,
+      default:
+        "https://res.cloudinary.com/dqj0xgk8h/image/upload/v1698230984/BlogApp/defaultProfilePic.png",
+    },
     refreshToken: String,
+    googleAuth: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );

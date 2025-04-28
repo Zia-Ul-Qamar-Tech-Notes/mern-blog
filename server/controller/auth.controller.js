@@ -2,6 +2,10 @@ import User from "../models/User.js";
 import bcrypt from "bcryptjs";
 import { errorHandler } from "../utils/error.js";
 import jwt from "jsonwebtoken";
+import {
+  generateAccessToken,
+  generateRefreshToken,
+} from "../utils/authenticate.js";
 
 const signup = async (req, res) => {
   try {
@@ -61,14 +65,8 @@ const signin = async (req, res) => {
     if (!isPasswordValid) {
       return res.status(401).json({ message: "Invalid Credentials" });
     }
-    const token = jwt.sign({ id: checkUser._id }, process.env.JWT_SECRET, {
-      expiresIn: "1d",
-    });
-    const refreshToken = jwt.sign(
-      { id: checkUser._id },
-      process.env.JWT_REFRESH_SECRET,
-      { expiresIn: "7d" }
-    );
+    const token = generateAccessToken({ id: checkUser._id });
+    const refreshToken = generateRefreshToken({ id: checkUser._id });
 
     checkUser.refreshToken = refreshToken;
     await checkUser.save();
@@ -90,7 +88,7 @@ const signin = async (req, res) => {
   }
 };
 
-const refreshToken = async (req, res) => {
+const refreshAccessToken = async (req, res) => {
   try {
     const { refreshToken } = req.body;
     if (!refreshToken) {
@@ -114,13 +112,7 @@ const refreshToken = async (req, res) => {
         }
 
         // Generate new access token
-        const newAccessToken = jwt.sign(
-          { id: user._id },
-          process.env.JWT_SECRET,
-          {
-            expiresIn: "1d",
-          }
-        );
+        const newAccessToken = generateAccessToken({ id: user._id });
 
         res
           .status(200)
@@ -141,4 +133,55 @@ const logout = async (req, res) => {
     .json({ status: "success", message: "Logged out successfully" });
 };
 
-export { signup, signin, refreshToken, logout };
+const googleAuth = async (req, res) => {
+  try {
+    const { name, email, image } = req.body;
+    const checkEmail = await User.findOne({ email });
+    if (checkEmail) {
+      const token = generateAccessToken({ id: checkEmail._id });
+      checkEmail.profilePic = image;
+      await checkEmail.save();
+      return res.status(200).json({
+        status: "success",
+        message: "Signin successful",
+        user: {
+          id: checkEmail._id,
+          username: checkEmail.username,
+          email: checkEmail.email,
+          image: checkEmail.profilePic,
+          name: name,
+        },
+        token: token,
+      });
+    } else {
+      const generatedPassword = Math.random().toString(36).slice(-8);
+      const hashedPassword = await bcrypt.hash(generatedPassword, 10);
+      const newUser = new User({
+        username: name,
+        email,
+        password: hashedPassword,
+        googleAuth: true,
+        profilePic: image,
+      });
+      const savedUser = await newUser.save();
+      const token = generateAccessToken({ id: savedUser._id });
+      return res.status(200).json({
+        status: "success",
+        message: "Signup successful",
+        user: {
+          id: savedUser._id,
+          username: savedUser.username,
+          email: savedUser.email,
+          image: savedUser.profilePic,
+          name: name,
+        },
+        token: token,
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export { signup, signin, refreshAccessToken, logout, googleAuth };

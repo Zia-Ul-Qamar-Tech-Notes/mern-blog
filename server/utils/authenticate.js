@@ -17,4 +17,15 @@ const authenticate = (req, res, next) => {
   });
 };
 
+export const generateAccessToken = (id) => {
+  return jwt.sign(id, process.env.JWT_SECRET, {
+    expiresIn: process.env.JWT_EXPIRY,
+  });
+};
+export const generateRefreshToken = (id) => {
+  return jwt.sign(id, process.env.JWT_REFRESH_SECRET, {
+    expiresIn: process.env.JWT_REFRESH_EXPIRY,
+  });
+};
+
 export default authenticate;

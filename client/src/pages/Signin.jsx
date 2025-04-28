@@ -20,18 +20,20 @@ function Signin() {
     e.preventDefault();
     try {
       dispatch(loginStart());
-      const res = await fetch(`http://localhost:8000/api/v1/auth/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
+      const res = await fetch(
+        `${import.meta.env.VITE_BACKEND_URL}/api/v1/auth/login`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData),
+        }
+      );
       const data = await res.json();
       if (data.status === "success") {
         localStorage.setItem("token", data.accessToken);
         localStorage.setItem("RefreshToken", data.refreshToken);
-        localStorage.setItem("user", JSON.stringify(data.user));
         dispatch(loginSuccess(data));
         navigate("/");
       }

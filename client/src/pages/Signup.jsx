@@ -1,6 +1,7 @@
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Label, TextInput, Button } from "flowbite-react";
+import OAuth from "../components/OAuth";
 
 function Signup() {
   const [formData, setFormData] = React.useState({});
@@ -17,13 +18,16 @@ function Signup() {
   const HandelSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch(`http://localhost:8000/api/v1/auth/signup`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
+      const res = await fetch(
+        `${import.meta.env.VITE_BACKEND_URL}/api/v1/auth/signup`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData),
+        }
+      );
       const data = await res.json();
       console.log(data);
       if (data.status === "success") {
@@ -108,6 +112,7 @@ function Signup() {
             >
               SignUp
             </button>
+            <OAuth />
           </form>
           <div>
             Already have an account?{" "}
