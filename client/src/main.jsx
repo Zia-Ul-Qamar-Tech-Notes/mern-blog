@@ -7,11 +7,11 @@ import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
 
 createRoot(document.getElementById("root")).render(
+  // <StrictMode>
   <PersistGate persistor={persistor}>
     <Provider store={store}>
-      <StrictMode>
-        <App />
-      </StrictMode>
+      <App />
     </Provider>
   </PersistGate>
+  // </StrictMode>
 );

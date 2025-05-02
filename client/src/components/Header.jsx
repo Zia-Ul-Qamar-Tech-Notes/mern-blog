@@ -2,18 +2,27 @@ import React from "react";
 import {
   Button,
   Navbar,
-  NavbarLink,
   TextInput,
   NavbarCollapse,
   NavbarToggle,
+  Avatar,
+  Dropdown,
+  DropdownHeader,
+  DropdownDivider,
+  DropdownItem,
 } from "flowbite-react";
 import { Link, useLocation } from "react-router-dom";
 import { AiOutlineSearch } from "react-icons/ai";
 import { FaMoon } from "react-icons/fa";
 import { NavLink } from "react-router-dom";
-
+import { useSelector, useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { toggleTheme } from "../redux/theme/themeSlice";
 function Header() {
-  const path = useLocation().pathname;
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { currentUser } = useSelector((state) => state.user);
+
   return (
     <>
       <Navbar className="">
@@ -39,14 +48,53 @@ function Header() {
           <AiOutlineSearch />{" "}
         </Button>
         <div className=" flex gap-2 md:order-2">
-          <Button className="w-12 h-10 hidden sm:inline" color="gray" pill>
+          <Button
+            className="w-12 h-10 hidden sm:inline"
+            color="gray"
+            pill
+            onClick={() => dispatch(toggleTheme())}
+          >
             <FaMoon />
           </Button>
-          <Link to="/signin">
-            <Button className=" bg-gradient-to-r from-indigo-400 via-pink-400 to-blue-400">
-              Sign In
-            </Button>
-          </Link>
+          {currentUser ? (
+            <Dropdown
+              arrowIcon={false}
+              inline
+              label={
+                <Avatar
+                  alt="ProfielePic"
+                  img={currentUser.user.image}
+                  rounded
+                />
+              }
+            >
+              <DropdownHeader className="text-center font-semibold">
+                <span className="block text-sm">
+                  @{currentUser.user.username}
+                </span>
+              </DropdownHeader>
+              <DropdownDivider />
+              <DropdownHeader className="text-center">
+                <span className="block text-sm">{currentUser.user.name}</span>
+              </DropdownHeader>
+              <Link to={"dashboard?tab=profile"}>
+                <DropdownItem className="hover:font-semibold">
+                  Profile
+                </DropdownItem>
+              </Link>
+              <Link to={"signout"}>
+                <DropdownItem className="hover:font-semibold">
+                  Signout
+                </DropdownItem>
+              </Link>
+            </Dropdown>
+          ) : (
+            <Link to="/signin">
+              <Button className=" bg-gradient-to-r from-indigo-400 via-pink-400 to-blue-400">
+                Sign In
+              </Button>
+            </Link>
+          )}
           <NavbarToggle />
         </div>
         <NavbarCollapse className="text-center">
